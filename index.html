@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วงล้อสุ่ม</title>
+    <style>
+        #wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 10px solid #333;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s ease-out;
+        }
+        
+        #pointer {
+            width: 0; 
+            height: 0; 
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 20px solid #333;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        #spinBtn {
+            margin-top: 20px;
+        }
+        
+        #log {
+            margin-top: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        #userForm {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="userForm">
+        <label for="userName">ชื่อผู้ใช้: </label>
+        <input type="text" id="userName" placeholder="กรอกชื่อผู้ใช้">
+    </div>
+
+    <div id="pointer"></div>
+    <div id="wheel">
+        <canvas id="canvas" width="300" height="300"></canvas>
+    </div>
+    <button id="spinBtn">หมุนวงล้อ</button>
+    <button id="downloadLogBtn">ดาวน์โหลด Log</button>
+
+    <div id="log">
+        <h3>Log การหมุน:</h3>
+        <div id="logEntries"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const downloadLogBtn = document.getElementById('downloadLogBtn');
+        const logEntries = document.getElementById('logEntries');
+        const userNameInput = document.getElementById('userName');
+
+        const options = ['รางวัลที่ 1', 'รางวัลที่ 2', 'รางวัลที่ 3', 'รางวัลที่ 4', 'รางวัลที่ 5', 'รางวัลที่ 6'];
+        const colors = ['#FF6347', '#FF4500', '#FFD700', '#ADFF2F', '#00FF7F', '#1E90FF'];
+
+        let startAngle = 0;
+        let logData = ''; // ตัวแปรสำหรับเก็บ log
+
+        function drawWheel() {
+            const arcSize = 2 * Math.PI / options.length;
+            options.forEach((option, i) => {
+                const angle = startAngle + i * arcSize;
+                ctx.beginPath();
+                ctx.arc(150, 150, 150, angle, angle + arcSize, false);
+                ctx.lineTo(150, 150);
+                ctx.fillStyle = colors[i];
+                ctx.fill();
+
+                ctx.save();
+                ctx.translate(150 + Math.cos(angle + arcSize / 2) * 100, 150 + Math.sin(angle + arcSize / 2) * 100);
+                ctx.rotate(angle + arcSize / 2 + Math.PI / 2);
+                ctx.fillStyle = '#fff';
+                ctx.fillText(option, -ctx.measureText(option).width / 2, 0);
+                ctx.restore();
+            });
+        }
+
+        function spin() {
+            const userName = userNameInput.value.trim();
+            if (userName === '') {
+                alert('กรุณากรอกชื่อผู้ใช้ก่อนหมุนวงล้อ');
+                return;
+            }
+
+            const spins = Math.floor(Math.random() * 10) + 5;
+            const resultAngle = Math.random() * 2 * Math.PI;
+            const totalAngle = spins * 2 * Math.PI + resultAngle;
+
+            startAngle = totalAngle % (2 * Math.PI);
+
+            document.getElementById('wheel').style.transform = `rotate(${totalAngle}rad)`;
+
+            setTimeout(() => {
+                const resultIndex = Math.floor((startAngle / (2 * Math.PI)) * options.length);
+                const result = options[resultIndex];
+
+                saveLog(userName, result);
+                displayLog(userName, result);
+            }, 4000);
+        }
+
+        function saveLog(userName, result) {
+            const timestamp = new Date().toISOString();
+            const logEntry = `${timestamp} - User: ${userName} - Result: ${result}\n`;
+            logData += logEntry; // เก็บ log ในตัวแปร logData
+            console.log(logEntry); // แสดง log ใน console
+        }
+
+        function displayLog(userName, result) {
+            const logEntry = `<div class="log-entry">${userName}: ${result}</div>`;
+            logEntries.innerHTML += logEntry;
+        }
+
+        function downloadLog() {
+            const blob = new Blob([logData], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'logWheelSpin.log';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        spinBtn.addEventListener('click', spin);
+        downloadLogBtn.addEventListener('click', downloadLog);
+
+        drawWheel();
+    </script>
+
+</body>
+</html>

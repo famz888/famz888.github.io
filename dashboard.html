@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Log</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Dashboard Log การหมุนวงล้อ</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>ชื่อผู้ใช้</th>
+                <th>ผลการหมุน</th>
+            </tr>
+        </thead>
+        <tbody id="logTableBody"></tbody>
+    </table>
+
+    <button id="backToWheelBtn">กลับไปที่วงล้อ</button>
+
+    <script>
+        const logTableBody = document.getElementById('logTableBody');
+        const backToWheelBtn = document.getElementById('backToWheelBtn');
+
+        function loadLogs() {
+            // ดึงข้อมูล log จาก localStorage
+            const logs = JSON.parse(localStorage.getItem('wheelLogs')) || [];
+
+            // แสดงข้อมูล log ในตาราง
+            logs.forEach(log => {
+                const row = `<tr>
+                    <td>${log.timestamp}</td>
+                    <td>${log.userName}</td>
+                    <td>${log.result}</td>
+                </tr>`;
+                logTableBody.innerHTML += row;
+            });
+        }
+
+        function goBackToWheel() {
+            window.location.href = 'wheel.html';
+        }
+
+        backToWheelBtn.addEventListener('click', goBackToWheel);
+
+        // โหลด log เมื่อเปิดหน้า
+        loadLogs();
+    </script>
+
+</body>
+</html>
